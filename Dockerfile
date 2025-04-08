@@ -1,6 +1,7 @@
 # integrates well with existing tools like Pandas for data manipulation and Boto3 for accessing cloud storage
 # That's an old version – but our developer has experience with it, and it is compatible for 3rd party packages he uses.
-FROM apache/airflow:1.10.10
+FROM --platform=linux/amd64 apache/airflow:1.10.10
+
 
 USER root
 
@@ -20,6 +21,9 @@ COPY ./dags /opt/airflow/dags
 # The Airflow database is initialized, and example DAGs are loaded to service as templates
 ENV AIRFLOW__CORE__LOAD_EXAMPLES=true
 RUN airflow initdb
+
+# Add a HEALTHCHECK instruction
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -f http://localhost:8080/health || exit 1
 
 # Webserver – (UI) allowing users to view and manage their DAGs
 # Scheduler – responsible for monitoring DAGs, triggering tasks
